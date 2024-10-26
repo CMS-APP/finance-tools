@@ -11,38 +11,45 @@ class StockData:
         self.endDate = endDate
         self.interval = interval
 
-        # Download data from yfinance
-        data = yf.download(
-            tickers=self.ticker,
-            interval=interval,
-            auto_adjust=True,
-            start=startDate,
-            end=endDate,
-        )
+        try :
+            # Download data from yfinance
+            data = yf.download(
+                tickers=self.ticker,
+                interval=interval,
+                auto_adjust=True,
+                start=startDate,
+                end=endDate,
+            )
 
-        # Check if data is empty and handle accordingly
-        if data.empty:
-            print(f"No data found for ticker {ticker} in the given date range.")
-            self.data = data
+            # Check if data is empty and handle accordingly
+            if data.empty:
+                print(f"No data found for ticker {ticker} in the given date range.")
+                self.data = data
+                self.dataClose = []
+                self.dataOpen = []
+                self.dataHigh = []
+                self.dataLow = []
+            else:
+                self.data = data
+                self.dataClose = (
+                    data["Close"].values.ravel().tolist()
+                )  # Convert the 'Close' column to a list
+                self.dataOpen = (
+                    data["Open"].values.ravel().tolist()
+                )  # Convert the 'Open' column to a list
+                self.dataHigh = (
+                    data["High"].values.ravel().tolist()
+                )  # Convert the 'High' column to a list
+                self.dataLow = (
+                    data["Low"].values.ravel().tolist()
+                )  # Convert the 'Low' column to a list
+        except Exception as e:
+            print(f"Error: {e}")
+            self.data = None
             self.dataClose = []
             self.dataOpen = []
             self.dataHigh = []
             self.dataLow = []
-        else:
-            self.data = data
-            self.dataClose = (
-                data["Close"].values.ravel().tolist()
-            )  # Convert the 'Close' column to a list
-            self.dataOpen = (
-                data["Open"].values.ravel().tolist()
-            )  # Convert the 'Open' column to a list
-            self.dataHigh = (
-                data["High"].values.ravel().tolist()
-            )  # Convert the 'High' column to a list
-            self.dataLow = (
-                data["Low"].values.ravel().tolist()
-            )  # Convert the 'Low' column to a list
-
 
 def download_tickers():
     print("Getting Tickers")
@@ -63,5 +70,5 @@ def download_tickers():
 
 def get_tickers():
     # Read the CSV file and return just a list of tickers
-    data = pd.read_csv("nasdaq_tickers.csv")
+    data = pd.read_csv("stock_tickers.csv")
     return data["Symbol"].tolist()[:-1]  # Return a list of tickers
