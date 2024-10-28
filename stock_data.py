@@ -1,59 +1,100 @@
 import yfinance as yf
-import pandas_datareader as pdr
+import numpy as np
 import pandas as pd
+import math
+import logging
+
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 
 class StockData:
     # Class which holds data for a specific stock
-    def __init__(self, ticker, startDate, endDate, interval):
+    def __init__(self, ticker, start_date, end_date, interval):
         self.ticker = ticker
-        self.startDate = startDate
-        self.endDate = endDate
+        self.start_date = start_date
+        self.end_date = end_date
         self.interval = interval
 
-        try :
+        self.data = []
+        self.data_close = []
+
+        self.year_count = None
+        self.off_all_time_high = None
+        self.ytd_return = None
+        self.three_yr_return = None
+        self.five_yr_return = None
+        self.yearly_return = None
+
+        self.sharpe_ratio = None
+        self.volatility = None
+
+        try:
             # Download data from yfinance
             data = yf.download(
                 tickers=self.ticker,
                 interval=interval,
                 auto_adjust=True,
-                start=startDate,
-                end=endDate,
+                start=start_date,
+                end=end_date,
+                progress=False,
             )
 
             # Check if data is empty and handle accordingly
-            if data.empty:
-                print(f"No data found for ticker {ticker} in the given date range.")
+            if not data.empty:
                 self.data = data
-                self.dataClose = []
-                self.dataOpen = []
-                self.dataHigh = []
-                self.dataLow = []
-            else:
-                self.data = data
-                self.dataClose = (
-                    data["Close"].values.ravel().tolist()
-                )  # Convert the 'Close' column to a list
-                self.dataOpen = (
-                    data["Open"].values.ravel().tolist()
-                )  # Convert the 'Open' column to a list
-                self.dataHigh = (
-                    data["High"].values.ravel().tolist()
-                )  # Convert the 'High' column to a list
-                self.dataLow = (
-                    data["Low"].values.ravel().tolist()
-                )  # Convert the 'Low' column to a list
+                self.data_close = data["Close"].values.ravel().tolist()
+                self.max_close = max(self.data_close)
+
+                self.year_count = math.floor(len(self.data_close) / 5)
+
         except Exception as e:
             print(f"Error: {e}")
-            self.data = None
-            self.dataClose = []
-            self.dataOpen = []
-            self.dataHigh = []
-            self.dataLow = []
+
+    def calculate_off_all_time_high(self):
+        latest_close = self.data_close[-1]
+        self.off_all_time_high = latest_close / self.max_close
+        # print("Off All Time High:", round((1 - self.off_all_time_high) * 100, 1))
+
+    def calculate_ytd_return(self):
+        self.ytd_return = self.data_close[-1] / self.data_close[-self.year_count]
+        # print("Year To Date Return:", self.ytd_return)
+
+    def calculate_5yr_return(self):
+        self.five_yr_return = (
+            self.data_close[-1] / self.data_close[-self.year_count * 3]
+        )
+        # print("Five Year Return:", self.five_yr_return)
+
+    def calculate_yearly_return(self):
+        yearly_return = []
+        for i in range(3):
+            year_return = (
+                self.data_close[-self.year_count * (i) - 1]
+                / self.data_close[-self.year_count * (i + 1) - 1]
+            )
+
+            yearly_return.append(round(year_return * 100, 1))
+        self.yearly_return = yearly_return
+        # print("Yearly Return:", yearly_return)
+
+    def calculate_sharpe_ratio(self):
+        # Calculates the sharpe ratio for the stock
+        risk_free_rate = 0.04 / 252
+        pct_changes = [
+            (self.data_close[i] - self.data_close[i - 1]) / self.data_close[i - 1]
+            for i in range(1, len(self.data_close))
+        ]
+        sharpe_ratio = (np.mean(pct_changes) - risk_free_rate) / np.std(pct_changes)
+        self.sharpe_ratio = sharpe_ratio * np.sqrt(len(pct_changes))
+
+    def calculate_stock_volatility(self):
+        # Calculates the volatility of the stock
+        returns = np.diff(self.data_close) / self.data_close[:-1]
+        self.volatility = np.std(returns) * np.sqrt(len(returns))
+
 
 def download_tickers():
     print("Getting Tickers")
-    # URL used by `pandas_datareader` to fetch NASDAQ symbols
     url = "ftp://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqlisted.txt"
 
     # Download the file and load it into a DataFrame
@@ -69,6 +110,11 @@ def download_tickers():
 
 
 def get_tickers():
-    # Read the CSV file and return just a list of tickers
-    data = pd.read_csv("stock_tickers.csv")
-    return data["Symbol"].tolist()[:-1]  # Return a list of tickers
+    tickers = []
+
+    f = open("stock_tickers.csv", "r")
+    for line in f.readlines()[1:]:
+        tickers.append(line.split(",")[0])
+    f.close()
+
+    return tickers  # Return a list of tickers
