@@ -52,8 +52,6 @@ class StockData:
     def calculate_off_all_time_high(self):
         latest_close = self.data_close[-1]
         self.off_all_time_high = ((latest_close / self.max_close) - 1) * 100
-        print(f"{self.ticker} off all time high: {self.off_all_time_high}")
-        quit()
 
     def calculate_ytd_return(self):
         latest_close = self.data_close[-1]
