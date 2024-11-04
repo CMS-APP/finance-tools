@@ -5,12 +5,11 @@ from stock_data import download_tickers, get_tickers
 from stock_analysis import find_good_stocks
 from stock_file import write_good_stock_to_csv
 from stock_plotting import plot_stocks
-from send_email import default_email_service
+from send_email import default_email_service, email_html
 
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    
     # End date is now
     end_date = pd.to_datetime("today")
 
@@ -32,10 +31,11 @@ if __name__ == "__main__":
     max_stocks = None
 
     print("Finding Good Stocks...")
-    good_stocks = find_good_stocks(start_date, end_date, interval, tickers[0:200], max_stocks)
+    good_stocks = find_good_stocks(start_date, end_date, interval, tickers, max_stocks)
     write_good_stock_to_csv(good_stocks)
-    plot_stocks(good_stocks)
+    # plot_stocks(good_stocks)
 
-    default_email_service(good_stocks)
+    html = email_html(good_stocks)
+    default_email_service(html)
 
     plt.show()

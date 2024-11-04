@@ -18,8 +18,9 @@ def calculate_dow_from_all_time_high():
     )
     dow.calculate_off_all_time_high()
 
-    print("Dow: Off All Time High:", round((1 - dow.off_all_time_high) * 100, 1))
-    return 1 - dow.off_all_time_high
+    print("Dow: Off All Time High:", round(dow.off_all_time_high, 1))
+
+    return dow.off_all_time_high
 
 
 def calculate_nasdaq_from_all_time_high():
@@ -35,8 +36,9 @@ def calculate_nasdaq_from_all_time_high():
     )
     nasdaq.calculate_off_all_time_high()
 
-    print("NASDAQ: Off All Time High:", round((1 - nasdaq.off_all_time_high) * 100, 1))
-    return 1 - nasdaq.off_all_time_high
+    print("NASDAQ: Off All Time High:", round(nasdaq.off_all_time_high, 1))
+
+    return nasdaq.off_all_time_high
 
 
 def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
@@ -50,6 +52,9 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
         return
 
     good_stocks = []
+
+    print("Calculating Dow and NASDAQ from all time high...")
+
     compare_stock_off_all_time_high = calculate_nasdaq_from_all_time_high()
     compare_stock_off_all_time_high = calculate_dow_from_all_time_high()
 
@@ -79,7 +84,9 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
                 "| Total Tickers: " + str(len(tickers)),
             )
 
-            print(f"{prog_text} | [{'*' * done_text}{' ' * not_done_text}] | Time Remaining: {remaining_time:.2f} seconds")
+            print(
+                f"{prog_text} | [{'*' * done_text}{' ' * not_done_text}] | Time Remaining: {remaining_time:.2f} seconds"
+            )
 
             company_stock = StockData(
                 ticker=ticker,
@@ -99,15 +106,14 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
 
             company_stock.calculate_off_all_time_high()
 
-            if (
-                not company_stock.off_all_time_high
-                > 0.9 - compare_stock_off_all_time_high
-            ):
+            # If the stock is more than 10% off its all time high, skip it
+
+            if company_stock.off_all_time_high < -10 + compare_stock_off_all_time_high:
                 continue
 
             company_stock.calculate_ytd_return()
 
-            if not company_stock.ytd_return > 1.3:
+            if company_stock.ytd_return < 30:
                 continue
 
             company_stock.calculate_yearly_return()
@@ -117,7 +123,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
 
             company_stock.calculate_5yr_return()
 
-            if not company_stock.five_yr_return > 2:
+            if company_stock.five_yr_return < 200:
                 continue
 
             company_stock.calculate_sharpe_ratio()
@@ -128,7 +134,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
                 return good_stocks
 
         except Exception as e:
-            print(f"Error: {ticker, index}")
+            print(f"Error: {ticker, index} {e}")
             quit()
 
     return good_stocks

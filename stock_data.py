@@ -44,7 +44,6 @@ class StockData:
                 self.data = data
                 self.data_close = data["Close"].values.ravel().tolist()
                 self.max_close = max(self.data_close)
-
                 self.year_count = math.floor(len(self.data_close) / 5)
 
         except Exception as e:
@@ -52,30 +51,29 @@ class StockData:
 
     def calculate_off_all_time_high(self):
         latest_close = self.data_close[-1]
-        self.off_all_time_high = latest_close / self.max_close
-        # print("Off All Time High:", round((1 - self.off_all_time_high) * 100, 1))
+        self.off_all_time_high = ((latest_close / self.max_close) - 1) * 100
+        print(f"{self.ticker} off all time high: {self.off_all_time_high}")
+        quit()
 
     def calculate_ytd_return(self):
-        self.ytd_return = self.data_close[-1] / self.data_close[-self.year_count]
-        # print("Year To Date Return:", self.ytd_return)
+        latest_close = self.data_close[-1]
+        yr_close = self.data_close[-self.year_count]
+        self.ytd_return = ((latest_close / yr_close) - 1) * 100
 
     def calculate_5yr_return(self):
-        self.five_yr_return = (
-            self.data_close[-1] / self.data_close[-self.year_count * 5]
-        )
-        # print("Five Year Return:", self.five_yr_return)
+        latest_close = self.data_close[-1]
+        five_yr_close = self.data_close[-self.year_count * 5]
+        self.five_yr_return = ((latest_close / five_yr_close) - 1) * 100
 
     def calculate_yearly_return(self):
         yearly_return = []
         for i in range(3):
-            year_return = (
-                self.data_close[-self.year_count * (i) - 1]
-                / self.data_close[-self.year_count * (i + 1) - 1]
-            )
+            pre_yr_close = self.data_close[-self.year_count * (i + 1) - 1]
+            post_yr_close = self.data_close[-self.year_count * i - 1]
+            year_return = ((post_yr_close / pre_yr_close) - 1) * 100
 
-            yearly_return.append(round((year_return * 100) - 100, 1))
+            yearly_return.append(year_return)
         self.yearly_return = yearly_return
-        # print("Yearly Return:", yearly_return)
 
     def calculate_sharpe_ratio(self):
         # Calculates the sharpe ratio for the stock
