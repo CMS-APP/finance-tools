@@ -40,7 +40,7 @@ def email_html(tickers):
     </style>
     </head>
     <body>
-    <h1>Hello, here are the top stocks for today:</h1>
+    <h1>Hello</h1>
     <h2>Here are the top stocks for today:</h2>
     <table>
         <tr>
@@ -84,8 +84,6 @@ def email_html(tickers):
 
     html += """
     </table>
-
-    <h2>Thank you for using our service.</h2>
     </body>
     </html>
     """
