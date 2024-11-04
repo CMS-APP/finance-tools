@@ -79,9 +79,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
                 "| Total Tickers: " + str(len(tickers)),
             )
 
-            print(
-                f"{prog_text} | [{done_text * "*"}{not_done_text * " "}] | Time Remaining: {remaining_time:.2f} seconds"
-            )
+            print(f"{prog_text} | [{'*' * done_text}{' ' * not_done_text}] | Time Remaining: {remaining_time:.2f} seconds")
 
             company_stock = StockData(
                 ticker=ticker,
@@ -114,7 +112,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
 
             company_stock.calculate_yearly_return()
 
-            if not all([value > 120 for value in company_stock.yearly_return]):
+            if not all([value > 20 for value in company_stock.yearly_return]):
                 continue
 
             company_stock.calculate_5yr_return()

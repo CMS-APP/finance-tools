@@ -73,7 +73,7 @@ class StockData:
                 / self.data_close[-self.year_count * (i + 1) - 1]
             )
 
-            yearly_return.append(round(year_return * 100, 1))
+            yearly_return.append(round((year_return * 100) - 100, 1))
         self.yearly_return = yearly_return
         # print("Yearly Return:", yearly_return)
 
@@ -119,7 +119,7 @@ def get_tickers(stock_type="all"):
 
     f = open(file_name, "r", encoding="cp1252")
     for line in f.readlines()[1:]:
-        tickers.append(line.split(",")[0])
+        tickers.append(line.split(",")[0].replace("\n", ""))
     f.close()
 
     return tickers  # Return a list of tickers
