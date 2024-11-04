@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     interval = "1d"
 
-    if os.path.exists("stock_tickers.csv"):
+    if os.path.exists("all_tickers.csv"):
         print("File exists")
     else:
         download_tickers()

@@ -13,8 +13,8 @@ def plot_stocks(stock):
             _, ax = plt.subplots(nrows=3, ncols=3)
 
         ax[subFigureNumY][subFigureNumX].plot(
-            range(len(close[(-company_stock.year_count * 3) - 1 :])),
-            close[(-company_stock.year_count * 3) - 1 :],
+            range(len(close[(-company_stock.year_count * 5) - 1 :])),
+            close[(-company_stock.year_count * 5) - 1 :],
             color="green",
             label=ticker,
         )

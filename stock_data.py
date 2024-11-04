@@ -61,7 +61,7 @@ class StockData:
 
     def calculate_5yr_return(self):
         self.five_yr_return = (
-            self.data_close[-1] / self.data_close[-self.year_count * 3]
+            self.data_close[-1] / self.data_close[-self.year_count * 5]
         )
         # print("Five Year Return:", self.five_yr_return)
 
@@ -109,10 +109,15 @@ def download_tickers():
     print("Got Tickers")
 
 
-def get_tickers():
+def get_tickers(stock_type="all"):
     tickers = []
 
-    f = open("stock_tickers.csv", "r")
+    if stock_type == "all":
+        file_name = "all_tickers.csv"
+    elif stock_type == "us":
+        file_name = "stock_tickers.csv"
+
+    f = open(file_name, "r", encoding="cp1252")
     for line in f.readlines()[1:]:
         tickers.append(line.split(",")[0])
     f.close()
