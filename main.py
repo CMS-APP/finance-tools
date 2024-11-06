@@ -42,12 +42,11 @@ if __name__ == "__main__":
     print(f"Tickers: {len(tickers)}")
     max_stocks = None
     
-    print("Finding Good Stocks...")
-    good_stocks = find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging)
+    normal_stock, good_stocks = find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging)
     write_good_stock_to_csv(good_stocks)
     # plot_stocks(good_stocks)
 
-    html = email_html(good_stocks)
+    html = email_html(normal_stock, good_stocks)
     default_email_service(html)
 
     # plt.show()

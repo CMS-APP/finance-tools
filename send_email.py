@@ -64,7 +64,7 @@ def email_html(normal_tickers, good_tickers):
     </head>
     <body>
     <h1>Hello</h1>
-    <h2>Here are the normal stocks prices for today:</h2>
+    <h2>Common Stock Data:</h2>
     <table>
         <tr>
             <th>Ticker</th>
@@ -86,8 +86,8 @@ def email_html(normal_tickers, good_tickers):
 
     html += """
     </table>
-
-    <h2>Here are the top stocks for today:</h2>
+    
+    <h2>Best Stocks Data:</h2>
     <table>
         <tr>
             <th>Ticker</th>

@@ -8,8 +8,11 @@ import math
 def get_complete_stock_data(ticker):
     end_date = pd.to_datetime("today")
     end_date = end_date.strftime("%Y-%m-%d")
+    # Start date is 5 years ago
+    start_date = pd.to_datetime("today") - pd.DateOffset(years=5)
+    start_date = start_date.strftime("%Y-%m-%d")
     stock_data = StockData(
-        ticker=ticker, start_date="1928-01-03", end_date=end_date, interval="1d"
+        ticker=ticker, start_date=start_date, end_date=end_date, interval="1d"
     )
 
     stock_data.calculate_5yr_return()
@@ -37,13 +40,15 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks, loggin
 
     dow = get_complete_stock_data("^DJI")
     nasdaq = get_complete_stock_data("^IXIC")
-    fang = get_complete_stock_data("NYFANG")
+    fang = get_complete_stock_data("^NYFANG")
     sp500 = get_complete_stock_data("^GSPC")
     compare_stock_off_all_time_high = (dow.off_all_time_high + nasdaq.off_all_time_high + fang.off_all_time_high + sp500.off_all_time_high) / 4
 
     normal_stocks = [dow, nasdaq, fang, sp500]
 
     start_time = time.time()  # Start time for progress tracking
+
+    print("Filtering tickers...")
 
     for index, ticker in enumerate(tickers):
         try:
