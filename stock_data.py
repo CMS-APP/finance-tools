@@ -1,6 +1,7 @@
 import yfinance as yf
 import numpy as np
 import pandas as pd
+import os
 import math
 import logging
 
@@ -96,9 +97,14 @@ def download_tickers():
     # Download the file and load it into a DataFrame
     df = pd.read_csv(url, sep="|")
 
+    # Get the current working directory
+    folder_path = os.path.dirname(os.path.realpath(__file__))
+    file_name = "all_tickers.csv"
+    file_path = os.path.join(folder_path, file_name)
+
     # Save DataFrame to a local CSV file
     df.to_csv(
-        "stock_tickers.csv", index=False
+        file_path, index=False
     )  # Set index=False to avoid saving the index column
 
     print("Tickers saved to stock_tickers.csv")
@@ -108,12 +114,17 @@ def download_tickers():
 def get_tickers(stock_type="all"):
     tickers = []
 
+    folder_path = os.path.dirname(os.path.realpath(__file__))
+    file_name = "all_tickers.csv"
+    
     if stock_type == "all":
         file_name = "all_tickers.csv"
     elif stock_type == "us":
         file_name = "stock_tickers.csv"
 
-    f = open(file_name, "r", encoding="cp1252")
+    file_path = os.path.join(folder_path, file_name)
+
+    f = open(file_path, "r", encoding="cp1252")
     for line in f.readlines()[1:]:
         tickers.append(line.split(",")[0].replace("\n", ""))
     f.close()

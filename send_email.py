@@ -18,8 +18,31 @@ def send_email(email_from, emails_to, subject, html):
     }
     mailjet.send.create(data=data)
 
+def add_stock_to_table(ticker, html):
+    yearly_return = "<ul>"
+    for index, year_return in enumerate(ticker.yearly_return):
+        if index == 0:
+            yearly_return += f"<li>Year 1: {round(ticker.ytd_return, 2)}%</li>"
+        else:
+            yearly_return += f"<li>Year {index + 1}: {round(year_return, 2)}%</li>"
+    yearly_return += "</ul>"
 
-def email_html(tickers):
+    html += f"""
+    <tr>
+        <td><b>{ticker.ticker}</b></td>
+        <td>{round(ticker.data_close[-1], 3)}</td>
+        <td>{round(ticker.max_close, 3)}</td>
+        <td>{round(ticker.off_all_time_high, 2)}%</td>
+        <td>{round(ticker.five_yr_return, 2)}%</td>
+        <td>{round(ticker.ytd_return, 2)}%</td>
+        <td>{yearly_return}</td>
+        <td>{round(ticker.volatility, 2)}</td>
+        <td>{round(ticker.sharpe_ratio, 2)}</td>
+    </tr>
+    """
+    return html
+
+def email_html(normal_tickers, good_tickers):
     html = """
     <html>
     <head>
@@ -41,6 +64,29 @@ def email_html(tickers):
     </head>
     <body>
     <h1>Hello</h1>
+    <h2>Here are the normal stocks prices for today:</h2>
+    <table>
+        <tr>
+            <th>Ticker</th>
+            <th>Current Price ($)</th>
+            <th>Highest Price ($)</th>
+            <th>Off All Time High (%)</th>
+            <th>Five Year Return (%)</th>
+            <th>Year To Date Return (%)</th>
+            <th>Yearly Returns (%)</th>
+            <th>Volatility</th>
+            <th>Sharpe Ratio</th>
+        </tr>
+    """
+
+    # Iterate over each ticker to add data rows
+
+    for ticker in normal_tickers:
+        html = add_stock_to_table(ticker, html)
+
+    html += """
+    </table>
+
     <h2>Here are the top stocks for today:</h2>
     <table>
         <tr>
@@ -57,30 +103,8 @@ def email_html(tickers):
     """
 
     # Iterate over each ticker to add data rows
-    for ticker in tickers:
-        yearly_return = "<ul>"
-        for index, year_return in enumerate(ticker.yearly_return):
-            if index == 0:
-                yearly_return += f"<li>Year 1: {round(ticker.ytd_return, 2)}%</li>"
-            else:
-                yearly_return += f"<li>Year {index + 1}: {round(year_return, 2)}%</li>"
-        yearly_return += "</ul>"
-
-        # Construct the table row for each ticker
-        row = f"""
-        <tr>
-            <td><b>{ticker.ticker}</b></td>
-            <td>{round(ticker.data_close[-1], 3)}</td>
-            <td>{round(ticker.max_close, 3)}</td>
-            <td>{round(ticker.off_all_time_high, 2)}%</td>
-            <td>{round(ticker.five_yr_return, 2)}%</td>
-            <td>{round(ticker.ytd_return, 2)}%</td>
-            <td>{yearly_return}</td>
-            <td>{round(ticker.volatility, 2)}</td>
-            <td>{round(ticker.sharpe_ratio, 2)}</td>
-        </tr>
-        """
-        html += row
+    for ticker in good_tickers:
+        html = add_stock_to_table(ticker, html)
 
     html += """
     </table>
@@ -91,7 +115,10 @@ def email_html(tickers):
 
 
 def get_emails():
-    with open("emails.csv", "r") as file:
+    file_folder = os.path.dirname(os.path.realpath(__file__))
+    file_path = os.path.join(file_folder, "emails.csv")
+
+    with open(file_path, "r") as file:
         return file.read().splitlines()
 
 

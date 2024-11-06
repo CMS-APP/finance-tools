@@ -5,43 +5,23 @@ import time
 import sys
 import math
 
-
-def calculate_dow_from_all_time_high():
-    """
-    Function to calculate how far the Dow Jones is from its all time high
-    """
-
+def get_complete_stock_data(ticker):
     end_date = pd.to_datetime("today")
     end_date = end_date.strftime("%Y-%m-%d")
-    dow = StockData(
-        ticker="^DJI", start_date="1928-01-03", end_date=end_date, interval="1d"
+    stock_data = StockData(
+        ticker=ticker, start_date="1928-01-03", end_date=end_date, interval="1d"
     )
-    dow.calculate_off_all_time_high()
 
-    print("Dow: Off All Time High:", round(dow.off_all_time_high, 1))
+    stock_data.calculate_5yr_return()
+    stock_data.calculate_yearly_return()
+    stock_data.calculate_ytd_return()
+    stock_data.calculate_off_all_time_high()
+    stock_data.calculate_sharpe_ratio()
+    stock_data.calculate_stock_volatility()
 
-    return dow.off_all_time_high
+    return stock_data
 
-
-def calculate_nasdaq_from_all_time_high():
-    """
-    Function to calculate how far the NASDAQ is from its all time high
-    """
-
-    end_date = pd.to_datetime("today")
-    end_date = end_date.strftime("%Y-%m-%d")
-
-    nasdaq = StockData(
-        ticker="^IXIC", start_date="1971-02-05", end_date=end_date, interval="1d"
-    )
-    nasdaq.calculate_off_all_time_high()
-
-    print("NASDAQ: Off All Time High:", round(nasdaq.off_all_time_high, 1))
-
-    return nasdaq.off_all_time_high
-
-
-def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
+def find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging):
     """
     Function to find stocks from tickers list that meet specific criteria.
     """
@@ -52,11 +32,16 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
         return
 
     good_stocks = []
-
+    
     print("Calculating Dow and NASDAQ from all time high...")
 
-    compare_stock_off_all_time_high = calculate_nasdaq_from_all_time_high()
-    compare_stock_off_all_time_high = calculate_dow_from_all_time_high()
+    dow = get_complete_stock_data("^DJI")
+    nasdaq = get_complete_stock_data("^IXIC")
+    fang = get_complete_stock_data("NYFANG")
+    sp500 = get_complete_stock_data("^GSPC")
+    compare_stock_off_all_time_high = (dow.off_all_time_high + nasdaq.off_all_time_high + fang.off_all_time_high + sp500.off_all_time_high) / 4
+
+    normal_stocks = [dow, nasdaq, fang, sp500]
 
     start_time = time.time()  # Start time for progress tracking
 
@@ -67,7 +52,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
             remaining_time = avg_time_per_iteration * (len(tickers) - index - 1)
             progress = (index + 1) / len(tickers) * 100
 
-            if index > 0:
+            if index > 0 and logging:
                 sys.stdout.write("\033[F\033[K" * 3)
                 sys.stdout.flush()
 
@@ -77,16 +62,18 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
             prog_percentage = f"{progress:.2f}"
             prog_text = "Progress: " + f"{prog_percentage}%".ljust(7)
 
-            print(
-                "\nTicker:   " + ticker.ljust(7),
-                "| Good Tickers: " + str(len(good_stocks)),
-                "| Filtered Tickers: " + str(index + 1),
-                "| Total Tickers: " + str(len(tickers)),
-            )
+            if logging:
 
-            print(
-                f"{prog_text} | [{'*' * done_text}{' ' * not_done_text}] | Time Remaining: {remaining_time:.2f} seconds"
-            )
+                print(
+                    "\nTicker:   " + ticker.ljust(7),
+                    "| Good Tickers: " + str(len(good_stocks)),
+                    "| Filtered Tickers: " + str(index + 1),
+                    "| Total Tickers: " + str(len(tickers)),
+                )
+
+                print(
+                    f"{prog_text} | [{'*' * done_text}{' ' * not_done_text}] | Time Remaining: {remaining_time:.2f} seconds"
+                )
 
             company_stock = StockData(
                 ticker=ticker,
@@ -131,10 +118,10 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks):
             good_stocks.append(company_stock)
 
             if max_stocks is not None and len(good_stocks) == max_stocks:
-                return good_stocks
+                return normal_stocks, good_stocks
 
         except Exception as e:
             print(f"Error: {ticker, index} {e}")
             quit()
 
-    return good_stocks
+    return normal_stocks, good_stocks

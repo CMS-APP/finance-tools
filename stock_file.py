@@ -1,5 +1,11 @@
+import os
+
 def write_good_stock_to_csv(stock_data):
-    with open("stock_analysis.csv", "w") as file:
+    folder_path = os.path.dirname(os.path.realpath(__file__))
+    file_name = "stock_analysis.csv"
+    file_path = os.path.join(folder_path, file_name)
+
+    with open(file_path, "w") as file:
         file.write(
             "Ticker,Five_Year_Return,First_Year_Return,Second_Year_Return,Third_Year_Return,Sharpe_Ratio,Volatility"
         )
