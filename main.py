@@ -12,9 +12,14 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     logging = False
+    testing = False
     if len(sys.argv) > 1:
-        if (sys.argv[1] == "-l"):
+        if "-l" in sys.argv:
             logging = True
+            print("Logging enabled")
+        if "-test" in sys.argv:
+            testing = True
+            print("Testing enabled")
 
     # End date is now
     end_date = pd.to_datetime("today")
@@ -42,11 +47,11 @@ if __name__ == "__main__":
     print(f"Tickers: {len(tickers)}")
     max_stocks = None
     
-    normal_stock, good_stocks = find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging)
+    normal_stock, good_stocks = find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging, testing)
     write_good_stock_to_csv(good_stocks)
     # plot_stocks(good_stocks)
 
     html = email_html(normal_stock, good_stocks)
-    default_email_service(html)
+    default_email_service(html, testing)
 
     # plt.show()

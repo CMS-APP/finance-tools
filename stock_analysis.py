@@ -24,7 +24,7 @@ def get_complete_stock_data(ticker):
 
     return stock_data
 
-def find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging):
+def find_good_stocks(start_date, end_date, interval, tickers, max_stocks, logging, testing):
     """
     Function to find stocks from tickers list that meet specific criteria.
     """
@@ -122,7 +122,7 @@ def find_good_stocks(start_date, end_date, interval, tickers, max_stocks, loggin
             company_stock.calculate_stock_volatility()
             good_stocks.append(company_stock)
 
-            if max_stocks is not None and len(good_stocks) == max_stocks:
+            if max_stocks is not None and len(good_stocks) == max_stocks or testing:
                 return normal_stocks, good_stocks
 
         except Exception as e:

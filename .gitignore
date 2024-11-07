@@ -161,3 +161,4 @@ cython_debug/
 .DS_Store
 emails.csv
 stock_analysis.csv
+test_emails.csv

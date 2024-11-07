@@ -1,5 +1,6 @@
 from mailjet_rest import Client
 import os
+import pandas as pd
 
 
 def send_email(email_from, emails_to, subject, html):
@@ -38,11 +39,19 @@ def add_stock_to_table(ticker, html):
         <td>{yearly_return}</td>
         <td>{round(ticker.volatility, 2)}</td>
         <td>{round(ticker.sharpe_ratio, 2)}</td>
-    </tr>
     """
+
+    if ticker.market_cap:
+        html += f"<td>{round(ticker.market_cap / 1_000_000, 2)}M</td>"
+
+    html += "</tr>"
     return html
 
 def email_html(normal_tickers, good_tickers):
+    today_date = pd.to_datetime("today")
+    # Convert to be DD/MM/YYYY
+    today_date = today_date.strftime("%d/%m/%Y")
+
     html = """
     <html>
     <head>
@@ -63,7 +72,11 @@ def email_html(normal_tickers, good_tickers):
     </style>
     </head>
     <body>
-    <h1>Hello</h1>
+    <h1>The Top Stock Newsletter</h1>
+    """
+    
+    html += f"""
+    <p>Welcome to today's stock information for: {today_date}. The first table includes data on common stocks, while the second are stock which have high growth.</p>
     <h2>Common Stock Data:</h2>
     <table>
         <tr>
@@ -86,7 +99,7 @@ def email_html(normal_tickers, good_tickers):
 
     html += """
     </table>
-    
+
     <h2>Best Stocks Data:</h2>
     <table>
         <tr>
@@ -99,6 +112,7 @@ def email_html(normal_tickers, good_tickers):
             <th>Yearly Returns (%)</th>
             <th>Volatility</th>
             <th>Sharpe Ratio</th>
+            <th>Market Cap</th>
         </tr>
     """
 
@@ -114,18 +128,30 @@ def email_html(normal_tickers, good_tickers):
     return html
 
 
-def get_emails():
+def get_emails(testing):
     file_folder = os.path.dirname(os.path.realpath(__file__))
-    file_path = os.path.join(file_folder, "emails.csv")
+
+    if testing:
+        file_path = os.path.join(file_folder, "test_emails.csv")
+    else:
+        file_path = os.path.join(file_folder, "emails.csv")
 
     with open(file_path, "r") as file:
         return file.read().splitlines()
 
 
-def default_email_service(html):
-    emails = get_emails()
+def default_email_service(html, testing):
+    emails = get_emails(testing)
     email_from = emails[0]
     emails_to = emails
     subject = "Daily Top Stock Newsletter"
+
+    print("Sending Email to: ", emails_to)
+
+    if testing:
+        # Save HTML to a file
+        with open("test_email.html", "w") as file:
+            file.write(html)
+            file.close()
 
     send_email(email_from, emails_to, subject, html)

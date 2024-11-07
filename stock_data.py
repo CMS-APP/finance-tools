@@ -43,6 +43,8 @@ class StockData:
             # Check if data is empty and handle accordingly
             if not data.empty:
                 self.data = data
+                info = yf.Ticker(ticker).info
+                self.market_cap = info.get('marketCap')
                 self.data_close = data["Close"].values.ravel().tolist()
                 self.max_close = max(self.data_close)
                 self.year_count = math.floor(len(self.data_close) / 5)
@@ -76,7 +78,7 @@ class StockData:
 
     def calculate_sharpe_ratio(self):
         # Calculates the sharpe ratio for the stock
-        risk_free_rate = 0.04 / 252
+        risk_free_rate = 0.05 / 252
         pct_changes = [
             (self.data_close[i] - self.data_close[i - 1]) / self.data_close[i - 1]
             for i in range(1, len(self.data_close))
